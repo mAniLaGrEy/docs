@@ -1,0 +1,74 @@
+import os
+import pandas as pd
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+
+# Ensure the single master directory exists
+os.makedirs("generated", exist_ok=True)
+
+# 1. RE-GENERATE THE MASTER LOG TRACKER EXCEL IN THE SINGLE FOLDER
+excel_path = "generated/client_outreach_tracker.xlsx"
+columns = ["Garage Name", "City/Location", "Phone Number", "Contact Date", "Package Pitch", "Status", "Notes"]
+initial_data = [
+    ["Autogarage Weert", "Weert", "+31 6 42138806", "2026-09-16", "Package B (€750)", "EMAIL SENT", "Active lift efficiency & Frank's towing yard layout."],
+    ["JM Autoservice", "Weert", "+31 6 50616851", "2026-09-16", "Package B (€850)", "EMAIL SENT", "High-volume routine maintenance & APK inspection flow."],
+    ["SB Autoservice", "Weert", "+31 6 87531061", "2026-09-16", "Package B (€750)", "EMAIL SENT", "Fast-turnover tire seasons & rapid parts tracking."]
+]
+df = pd.DataFrame(initial_data, columns=columns)
+df.to_excel(excel_path, index=False)
+
+# 2. RE-GENERATE THE INTAKE FORM PDF IN THE SINGLE FOLDER
+pdf_intake_path = "generated/workshop_intake_form.pdf"
+doc_intake = SimpleDocTemplate(pdf_intake_path, pagesize=letter, title="Workshop Intake Sheet")
+styles = getSampleStyleSheet()
+
+title_style = ParagraphStyle('TitleStyle', fontName='Helvetica-Bold', fontSize=18, leading=22, textColor=colors.HexColor('#1A365D'), alignment=1)
+section_style = ParagraphStyle('SectionStyle', fontName='Helvetica-Bold', fontSize=12, leading=16, textColor=colors.HexColor('#2B6CB0'), spaceBefore=8, spaceAfter=4)
+body_style = ParagraphStyle('BodyStyle', fontName='Helvetica', fontSize=10, leading=14, textColor=colors.HexColor('#2D3748'))
+
+story_intake = [
+    Paragraph("WORKSHOP OPERATIONS INTAKE SHEET", title_style),
+    Spacer(1, 10),
+    Paragraph("1. Vehicle & Client Identification", section_style),
+    Table([
+        [Paragraph("<b>Job Ticket ID:</b> GP-____", body_style), Paragraph("<b>Date/Time:</b> ____/____/2026  __:__", body_style)],
+        [Paragraph("<b>License Plate:</b> ____________________", body_style), Paragraph("<b>VIN (Last 6):</b> ____________________", body_style)],
+        [Paragraph("<b>Vehicle Make/Model:</b> ____________________", body_style), Paragraph("<b>Customer Name:</b> ____________________", body_style)]
+    ], colWidths=250, style=[('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#CBD5E0')), ('PADDING', (0,0), (-1,-1), 6)]),
+    Spacer(1, 10),
+    Paragraph("2. Operational Triage & Staging", section_style),
+    Table([
+        [Paragraph("<b>Initial Location:</b>", body_style), Paragraph("[  ] Staging Yard  [  ] Bay 1  [  ] Bay 2  [  ] Bay 3", body_style)],
+        [Paragraph("<b>Workflow Status:</b>", body_style), Paragraph("[  ] Diagnostic  [  ] Waiting Approval  [  ] Ready to Wrench", body_style)],
+        [Paragraph("<b>Parts Status:</b>", body_style), Paragraph("[  ] No Parts Needed  [  ] Stock Available  [  ] Need to Order", body_style)],
+        [Paragraph("<b>Completion Target:</b>", body_style), Paragraph("Date: ____/____/2026   Target Time: __:__", body_style)]
+    ], colWidths=150, style=[('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#CBD5E0')), ('PADDING', (0,0), (-1,-1), 6)]),
+    Spacer(1, 10),
+    Paragraph("3. Primary Customer Complaint / Diagnostic Notes", section_style),
+    Table([[Paragraph("<br/><br/><br/><br/>", body_style)]], colWidths=500, style=[('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#CBD5E0'))])
+]
+doc_intake.build(story_intake)
+
+# 3. RE-GENERATE THE PRESENTATION PDF IN THE SINGLE FOLDER
+pdf_pres_path = "generated/workshop_operations_presentation.pdf"
+doc_pres = SimpleDocTemplate(pdf_pres_path, pagesize=letter, title="Remote Workshop Operations Proposal")
+
+story_pres = [
+    Paragraph("REMOTE WORKSHOP OPERATIONS", title_style),
+    Paragraph("Maximum Lift Efficiency & Back-Office Consistency", ParagraphStyle('Sub', fontName='Helvetica', fontSize=11, alignment=1, textColor=colors.HexColor('#4A5568'))),
+    Spacer(1, 15),
+    Paragraph("The Core Challenge", section_style),
+    Paragraph("Independent auto repair shops lose thousands of Euros every month due to chaotic scheduling, unlogged vehicle statuses, and late parts deliveries. When a lift sits tied up waiting for a brake rotor, your mechanics stand idle and billable labor time is permanently lost.", body_style),
+    Spacer(1, 10),
+    Paragraph("The Solution: Remote Board Management", section_style),
+    Paragraph("I provide a dedicated, remote operational backbone for your garage floor. By replacing manual whiteboards with a live digital dashboard, I manage your shop's capacity from morning until afternoon without adding heavy corporate overhead.", body_style),
+    Spacer(1, 10),
+    Paragraph("Key Operational Benefits", section_style),
+    Paragraph("• <b>Live Bay Tracking:</b> Instant visibility into exactly which vehicle occupies Bay 1, Bay 2, or the Staging Yard.", body_style),
+    Paragraph("• <b>Proactive Parts Logistics:</b> Continuous monitoring of vendor portals and delivery ETAs to ensure parts arrive <i>before</i> a car goes onto the lift.", body_style),
+    Paragraph("• <b>Enforced Delay SOPs:</b> If a parts delivery is delayed, a strict 'Roll-Out Protocol' is triggered to clear the lift and pull the next ready job in, protecting billable hours.", body_style),
+    Paragraph("• <b>Zero Field Distractions:</b> Your on-site team spends only 15 seconds logging cars via a mobile checklist. I handle all the heavy tracking and data management.", body_style)
+]
+doc_pres.build(story_pres)
